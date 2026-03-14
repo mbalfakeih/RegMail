@@ -16,8 +16,11 @@ data Regex = One CharRange | Optional Regex | Star Regex | Plus Regex | Union Re
 
 data Budget = Unlimited | Finite Int
 
-addr-spec :: Production Budget 
-addr-spec = NonTerminal "addr-spec" Unlimited ["local-part", "at-sign", "domain"]
+addrSpec :: Production Budget 
+addrSpec = NonTerminal "addr-spec" Unlimited ["local-part", "at-sign", "domain"]
 
-at-sign :: Production Finite 1
-at-sign = singletonRange '@'
+atSign :: Production a
+atSign = Terminal "at-sign" $ singletonRange '@'
+
+main :: IO ()
+main = undefined
