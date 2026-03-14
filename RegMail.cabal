@@ -67,10 +67,12 @@ executable RegMail
     -- other-extensions:
 
     -- Other library packages from which modules are imported.
-    build-depends:    base ^>=4.12.0.0
+    build-depends:    base >=4.12.0.0 ,
+                      containers >= 0.8
 
     -- Directories containing source files.
     hs-source-dirs:   app
 
     -- Base language which the package is written in.
     default-language: GHC2024
+
