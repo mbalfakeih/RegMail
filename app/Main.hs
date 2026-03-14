@@ -1,12 +1,7 @@
 module Main where
     
 import Language
-
-addrSpec :: Production 
-addrSpec = NonTerminal "addr-spec" ["local-part", "at-sign", "domain"]
-
-atSign :: Production
-atSign = Terminal "at-sign" $ singletonRange '@'
+import Grammar
 
 main :: IO ()
-main = undefined
+main =  putStrLn (show $ checkConsistent productions)
