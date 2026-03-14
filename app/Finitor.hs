@@ -35,7 +35,7 @@ elaborateBudgets cfg= case runState (elaborateVar (startRule cfg) (fromMaybe Unl
                 Nothing -> return $ Just var -- already elaborated
                 Just var' -> do
                     ps <- gets (fromJust . lookup var . prods)
-                    ps' <- concat <$> mapM (fmap (fromMaybe []) . elaborateProd var' b) ps
+                    ps' <- concat <$> mapM (fmap (fromMaybe []) . elaborateProd var' (Finite b)) ps
                     if Prelude.null ps' then return Nothing else do
                         prods' <- gets (insert var' ps' . prods)
                         modify (modifyProds prods')
@@ -61,11 +61,11 @@ elaborateBudgets cfg= case runState (elaborateVar (startRule cfg) (fromMaybe Unl
             newBudgets <- insert name (Finite (rangeBudget cr)) <$> gets budgets 
             modify (modifyBudgets newBudgets)
             return $ Just $ [Terminal name cr]
-        elaborateProd name (Finite b) t@(NonTerminal _ l r) = if b < 0 then return Nothing else do
+        elaborateProd name (Finite b) p@(NonTerminal _ l r) = if b < 0 then return Nothing else do
             rangeL <- getRangeIfTerminal l
             rangeR <- getRangeIfTerminal r
             case (rangeL, rangeR) of
-                (Just crL, Just crR) -> if (rangeBudget crL + rangeBudget crR) > b then return Nothing else return $ Just t
+                (Just crL, Just crR) -> if (rangeBudget crL + rangeBudget crR) > b then return Nothing else return $ Just [p]
                 (Just cr, Nothing) -> do
                     let remBudget = b - (rangeBudget cr)
                     r' <- elaborateVar r (Finite remBudget)
