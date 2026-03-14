@@ -50,7 +50,10 @@ elaborateBudgets cfg= case runState (elaborateVar (startRule cfg) (fromMaybe Unl
         elaborateVar var Unlimited = do
             ps <- gets (fromJust . lookup var . prods)
             ps' <- concat <$> mapM (fmap (fromMaybe []) . elaborateProd var Unlimited) ps
-            if Prelude.null ps' then return Nothing else return $ Just var
+            if Prelude.null ps' then return Nothing else do
+                prods' <- gets (insert var ps' . prods)
+                modify (modifyProds prods')
+                return $ Just var
 
         -- I desire a version of this production that generates at most this many chars
         elaborateProd :: String -> Budget -> Production -> State CFG (Maybe [Production])
