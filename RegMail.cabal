@@ -71,7 +71,7 @@ executable RegMail
                       containers >= 0.8,
                       mtl >= 2.3.2
 
-    other-modules: Finitor, Language
+    other-modules: Finitor, Language, CfgToRegex
 
     -- Directories containing source files.
     hs-source-dirs:   app

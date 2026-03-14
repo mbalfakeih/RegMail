@@ -22,7 +22,7 @@ modifyBudgets b (CFG { .. }) = CFG { prods, startRule, budgets = b }
 modifyProds :: Map String [Production] -> CFG -> CFG
 modifyProds ps (CFG {..}) = CFG {prods = ps, startRule, budgets}
 
-data Regex = One CharRange | Optional Regex | Star Regex | Plus Regex | Union Regex Regex | Concat Regex Regex
+data Regex = One CharRange | Optional Regex | Union Regex Regex | Concat Regex Regex | Epsilon
 
 data Budget = Unlimited | Finite Int
 
@@ -36,3 +36,10 @@ instance Show CFG where
     show (CFG {..}) = "Start: " ++ startRule ++ "\n" ++ unlines (showOneVar <$> assocs prods)
         where
             showOneVar (v, ps) = v ++ ": \n" ++ unlines (showWithBudget (fromMaybe Unlimited $ Data.Map.lookup v budgets) <$> ps)
+
+instance Show Regex where
+    show (One CharRange {..}) = if end - start == 1 then [chr start] else "(\\" ++ show start ++ "-" ++ "\\" ++ show end ++ ")" -- todo this is definitely wrong
+    show (Optional r) = "(" ++ show r ++ ")?"
+    show (Union r1 r2) = "(" ++ show r1 ++ "|" ++ show r2 ++ ")"
+    show (Concat r1 r2) = show r1 ++ show r2
+    show Epsilon = "(eps)"
