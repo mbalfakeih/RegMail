@@ -29,8 +29,8 @@ data Budget = Unlimited | Finite Int
 showWithBudget :: Budget -> Production -> String
 showWithBudget Unlimited (NonTerminal n l r) = n ++ " -> " ++ l ++ " " ++ r
 showWithBudget Unlimited (Terminal n (CharRange {..})) = n ++ " -> " ++ "{" ++ show start ++ "-" ++ show end ++ "}"
-showWithBudget (Finite b) (NonTerminal n l r) = n ++ "( <= " ++ show b ++ ") -> " ++ l ++ " " ++ r
-showWithBudget (Finite b) (Terminal n (CharRange {..})) = n ++ "( <= " ++ show b ++ ") -> " ++ "{" ++ show start ++ "-" ++ show end ++ "}"
+showWithBudget (Finite b) (NonTerminal n l r) = n ++ "(<= " ++ show b ++ ") -> " ++ l ++ " " ++ r
+showWithBudget (Finite b) (Terminal n (CharRange {..})) = n ++ "(<= " ++ show b ++ ") -> " ++ "{" ++ show start ++ "-" ++ show end ++ "}"
 
 instance Show CFG where
     show (CFG {..}) = "Start: " ++ startRule ++ "\n" ++ unlines (showOneVar <$> assocs prods)
