@@ -4,4 +4,4 @@ import Language
 import Grammar
 
 main :: IO ()
-main =  putStrLn (show addrSpec)
+main =  putStrLn (show $ checkConsistent productions)

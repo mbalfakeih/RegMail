@@ -1,7 +1,9 @@
 module Grammar where
 
 import Language
-import Data.Map (fromList, Map)
+import Data.Map (fromList, Map, assocs, member)
+import Debug.Trace
+import Data.List (groupBy)
 
 -- helper function to convert disjunctions into separate rules
 undisjunct :: String -> [String] -> [Production]
@@ -34,7 +36,7 @@ epsilon :: Production
 epsilon = Terminal "epsilon" CharRange {start = 0,end = 0}
 
 addrSpec :: [Production]
-addrSpec = unconcat "addr-spec" ["local-part", "atSign", "domain"]
+addrSpec = unconcat "addr-spec" ["local-part", "at-sign", "domain"]
 
 atSign :: Production
 atSign = Terminal "at-sign" $ singletonRange '@'
@@ -115,7 +117,7 @@ d93_126 :: Production
 d93_126 = Terminal "%d93-126" CharRange {start = 93, end = 126 + 1}
 
 qtext :: [Production]
-qtext = undisjunct "qtext" ["%d33", "%d35-91", "%d93-126", "obs-qtext"]
+qtext = undisjunct "qtext" ["%d33", "%d35-91", "%d93-126", "obs-NO-WS-CTL"]
 
 qcontent :: [Production]
 qcontent = undisjunct "qcontent" ["qtext", "quoted-pair"]
@@ -211,7 +213,7 @@ kleeneOptionalFWSContent :: [Production]
 kleeneOptionalFWSContent = unkleene "*opt-fws-ccontent" "opt-fws-ccontent" False 
 
 comment :: [Production]
-comment = unconcat "comment" ["left-parenthesis", "*opt-fws-content", "opt-fws", "right-parenthesis"]
+comment = unconcat "comment" ["left-parenthesis", "*opt-fws-ccontent", "opt-fws", "right-parenthesis"]
 
 optionalFWSComment :: Production 
 optionalFWSComment = NonTerminal "opt-fws-comment" "opt-fws" "comment"
@@ -288,7 +290,10 @@ d0 :: Production
 d0 = Terminal "%d0" $ CharRange {start = 0, end = 1}
 
 obsQPPart :: [Production]
-obsQPPart = undisjunct "obs-qp-part" ["%d0", "obs-NO-WS-CTL", "LF", "CR"]
+obsQPPart = undisjunct "obs-qp-part" ["%d0", "obs-NO-WS-CTL", "%x0A", "%x0D"]
+
+obsQP :: Production
+obsQP = NonTerminal "obs-qp" "backslash" "obs-qp-part"
 
 d1_8 :: Production
 d1_8 = Terminal "%d1-8" CharRange {start = 1, end = 8  + 1}
@@ -337,109 +342,138 @@ crlf :: Production
 crlf = NonTerminal "CRLF" "%x0D" "%x0A"
 
 
+allProductions ::  [Production]
+allProductions =  [epsilon] 
+    ++ addrSpec
+    ++ [atSign] 
+    ++ localPart
+    ++ domain
+    ++ optionalCFWS
+    ++ dotAtom
+    ++ kleeneOneAtext
+    ++ [dotAtext]
+    ++ kleeneDotAtext
+    ++ [dotAtomText]
+    ++ [dot]
+    ++ atom
+    ++ [leftSquareBracket]
+    ++ [rightSquareBracket]
+    ++ optionalFWS
+    ++ [optionalFWSDtext]
+    ++ kleeneOptionalFWSDText
+    ++ domainLiteral
+    ++ [d33_90]
+    ++ [d94_126]
+    ++ dtext
+    ++ obsDtext
+    ++ [optionalFWSQContent]
+    ++ kleeneOptionalFSWQContent
+    ++ quotedString
+    ++ [d33]
+    ++ [d35_91]
+    ++ [d93_126]
+    ++ qtext
+    ++ qcontent
+    ++ quotedPair
+    ++ [backslashVCHARWSP]
+    ++ [backslash]
+    ++ vcharWSP
+    ++ [vchar]
+    ++ atext
+    ++ [exclamationMark]
+    ++ [hash]
+    ++ [dollarSign]
+    ++ [percentage]
+    ++ [ampersand]
+    ++ [apostrophe]
+    ++ [plus]
+    ++ [star] 
+    ++ [dash]
+    ++ [slash]
+    ++ [equals]
+    ++ [questionMark]
+    ++ [caret]
+    ++ [underscore]
+    ++ [backtick]
+    ++ [leftCurlyBrace]
+    ++ [verticalBar]
+    ++ [rightCurlyBrace]
+    ++ [tilde]
+    ++ ccontent
+    ++ [leftParenthesis]
+    ++ [rightParenthesis]
+    ++ [optionalFWSContent]
+    ++ kleeneOptionalFWSContent
+    ++ comment
+    ++ [optionalFWSComment]
+    ++ kleeneOptionalFWSComment
+    ++ [kleeneOptFWSCommentOptionalFWS]
+    ++ cFWS
+    ++ starWSP
+    ++ [starWSPCRLF]
+    ++ optionalStarWSPCRLF
+    ++ oneStarWSP
+    ++ [optionalStarWSPCRLFOneStarWSP]
+    ++ [fWS]
+    ++ [d33_39]
+    ++ [d42_91]
+    ++ ctext
+    ++ [upperCaseLetters]
+    ++ [lowerCaseLetters]
+    ++ [alpha]
+    ++ [digit]
+    ++ [dquote]
+    ++ [periodAtom]
+    ++ kleenePeriodAtom
+    ++ [obsDomain]
+    ++ [periodWord]
+    ++ kleenePeriodWord
+    ++ [obsLocalPart]
+    ++ [d0]
+    ++ obsQPPart
+    ++ [obsQP]
+    ++ [d1_8]
+    ++ [d11_12]
+    ++ [d14_31]
+    ++ [d127]
+    ++ obsNOWSCTL
+    ++ [cRLFOneStarWSP]
+    ++ starcRLFOneStarWSP
+    ++ [obsFWS]
+    ++ word 
+    ++ [x20]
+    ++ [x09]
+    ++ [wsp]
+    ++ [x0D]
+    ++ [x0A]
+    ++ [crlf]
+
 productions :: Map String [Production]
-productions = fromList [
-    ("epsilon", [epsilon]),
-    ("addr-spec", addrSpec),
-    ("at-sign", [atSign]),
-    ("local-part", localPart),
-    ("domain", domain),
-    ("opt-cfws", optionalCFWS),
-    ("dot-atom", dotAtom),
-    ("1*atext", kleeneOneAtext),
-    ("dot-atext", [dotAtext]),
-    ("*dot-atext", kleeneDotAtext),
-    ("dot-atom-text", [dotAtomText]),
-    ("dot", [dot]),
-    ("atom", atom),
-    ("left-square-bracket", [leftSquareBracket]),
-    ("right-square-bracket", [rightSquareBracket]),
-    ("opt-fws", optionalFWS),
-    ("*opt-fws-dtext", kleeneOptionalFWSDText),
-    ("domain-literal", domainLiteral),
-    ("%d33-90", [d33_90]),
-    ("%d94-126", [d94_126]),
-    ("dtext", dtext),
-    ("obs-dtext", obsDtext),
-    ("opt-fws-qcontent", [optionalFWSQContent]),
-    ("*opt-fws-qcontent", kleeneOptionalFSWQContent),
-    ("quoted-string", quotedString),
-    ("%d33", [d33]),
-    ("%d35-91", [d35_91]),
-    ("%d93-126", [d93_126]),
-    ("qtext", qtext),
-    ("qcontent", qcontent),
-    ("quotedPair", quotedPair),
-    ("backslash-VCHAR-WSP", [backslashVCHARWSP]),
-    ("VCHAR-WSP", vcharWSP),
-    ("backslash", [backslash]),
-    ("VCHAR", [vchar]),
-    ("atext", atext),
-    ("exclamation-mark", [exclamationMark]),
-    ("hash", [hash]),
-    ("dollar-sign", [dollarSign]),
-    ("percentage", [percentage]),
-    ("ampersand", [ampersand]),
-    ("apostrophe", [apostrophe]),
-    ("star", [star]),
-    ("dash", [dash]),
-    ("slash", [slash]),
-    ("equals", [equals]),
-    ("question-mark", [questionMark]),
-    ("caret", [caret]),
-    ("underscore", [underscore]),
-    ("backtick", [backtick]),
-    ("left-curly-brace", [leftCurlyBrace]),
-    ("vertical-bar", [verticalBar]),
-    ("right-curly-brace", [rightCurlyBrace]),
-    ("tilde", [tilde]),
-    ("ccontent", ccontent),
-    ("left-parenthesis", [leftParenthesis]),
-    ("right-parenthesis", [rightParenthesis]),
-    ("opt-fws-ccontent", [optionalFWSContent]),
-    ("*opt-fws-ccontent", kleeneOptionalFWSContent),
-    ("comment", comment),
-    ("opt-fws-comment", [optionalFWSComment]),
-    ("1*opt-fws-comment", kleeneOptionalFWSComment),
-    ("1*opt-fws-comment-opt-fws", [kleeneOptFWSCommentOptionalFWS]),
-    ("CFWS", cFWS),
-    ("*WSP", starWSP),
-    ("*wsp-crlf", [starWSPCRLF]),
-    ("opt-*wsp-crlf", optionalStarWSPCRLF),
-    ("1*WSP", oneStarWSP),
-    ("opt-*wsp-crlf-1*wsp", [optionalStarWSPCRLFOneStarWSP]),
-    ("FWS", [fWS]),
-    ("%d33-39", [d33_39]),
-    ("%d42-91", [d42_91]),
-    ("ctext", ctext),
-    ("%x41-5A", [upperCaseLetters]),
-    ("%x61-7A", [lowerCaseLetters]),
-    ("ALPHA", [alpha]),
-    ("digit", [digit]),
-    ("dquote", [dquote]),
-    ("period-atom", [periodAtom]),
-    ("*period-atom", kleenePeriodAtom),
-    ("obs-domain", [obsDomain]),
-    ("period-word", kleenePeriodWord),
-    ("obs-local-part", [obsLocalPart]),
-    ("%d0", [d0]),
-    ("obs-qp-part", obsQPPart),
-    ("%d1-8", [d1_8]),
-    ("%d11-12", [d11_12]),
-    ("%d14-31", [d14_31]),
-    ("%d127", [d127]),
-    ("obs-NO-WS-CTL", obsNOWSCTL),
-    ("crlf-1*wsp", [cRLFOneStarWSP]),
-    ("*crlf-1*wsp", starcRLFOneStarWSP),
-    ("obs-FWS", [obsFWS]),
-    ("word", word),
-    ("%x20", [x20]),
-    ("%x09", [x09]),
-    ("wsp", [wsp]),
-    ("%x0D", [x0D]),
-    ("%x0A", [x0A]),
-    ("CRLF", [crlf])]
+productions = 
+    let prodPairs = (map (\(x::Production)-> case x of 
+                                    NonTerminal s _ _ -> (s, x)
+                                    Terminal s _ -> (s, x)) allProductions)
+    in fromList (productionsHelper (groupBy (\a b -> fst a == fst b) prodPairs))
+
+productionsHelper :: [[(String, Production)]] -> [(String, [Production])]
+productionsHelper [] = []
+productionsHelper (h:t) = let s = fst (head h) in (s, map (\x -> snd x) h):(productionsHelper t)
 
 cfg :: CFG 
 cfg = CFG {prods = productions, startRule = "addr-spec", budgets = fromList [("local-part", Finite 64), ("domain", Finite 255)]}
 
+checkConsistent :: Map String [Production] -> Bool 
+checkConsistent prods = checkConsistentHelper (assocs prods) prods
+
+checkConsistentHelper :: [(String, [Production])] -> Map String [Production] -> Bool 
+checkConsistentHelper [] _ = True
+checkConsistentHelper ((_, s_prods):t) prods = (checkConsistentHelperHelper s_prods prods) && checkConsistentHelper t prods
+
+checkConsistentHelperHelper :: [Production] -> Map String [Production] -> Bool 
+checkConsistentHelperHelper [] _ = True
+checkConsistentHelperHelper ((Terminal _ _):t) prods = checkConsistentHelperHelper t prods
+checkConsistentHelperHelper ((NonTerminal _ rule1 rule2):t) prods = if member rule1 prods then 
+                                                                    (if member rule2 prods then 
+                                                                        checkConsistentHelperHelper t prods 
+                                                                    else trace rule2 False)
+                                                                    else trace rule1 False
