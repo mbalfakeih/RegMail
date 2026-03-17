@@ -257,7 +257,7 @@ upperCaseLetters :: Production
 upperCaseLetters = Terminal "%x41-5A" $ CharRange {start = 65, end = 90 + 1}
 
 lowerCaseLetters :: Production
-lowerCaseLetters = Terminal "%x61-7A" $ CharRange {start = 92, end = 122 + 1}
+lowerCaseLetters = Terminal "%x61-7A" $ CharRange {start = 97, end = 122 + 1}
 
 alpha :: [Production]
 alpha = undisjunct "ALPHA" ["%x41-5A", "%x61-7A"]
@@ -329,8 +329,8 @@ x20 = Terminal "%x20" $ CharRange {start = 32, end = 32 + 1}
 x09 :: Production
 x09 = Terminal "%x09" $ CharRange {start = 9, end = 9 + 1}
 
-wsp :: Production
-wsp = NonTerminal "WSP" "%x20" "%x09"
+wsp :: [Production]
+wsp = undisjunct "WSP" ["%x20", "%x09"]
 
 x0D :: Production
 x0D = Terminal "%x0D" $ CharRange {start = 13, end = 13 + 1}
@@ -460,7 +460,7 @@ productionsHelper [] = []
 productionsHelper (h:t) = let s = fst (head h) in (s, map (\x -> snd x) h):(productionsHelper t)
 
 cfg :: CFG 
-cfg = CFG {prods = productions, startRule = "addr-spec", budgets = fromList [("local-part", Finite 64), ("domain", Finite 255)]}
+cfg = CFG {prods = productions, startRule = "addr-spec", budgets = fromList [("local-part", Finite 2), ("domain", Finite 3)]}
 
 checkConsistent :: Map String [Production] -> Bool 
 checkConsistent prods = checkConsistentHelper (assocs prods) prods
