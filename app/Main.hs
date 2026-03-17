@@ -12,9 +12,12 @@ getAllProds :: CFG -> [Production]
 getAllProds (CFG{prods = prods}) = concatMap snd $ assocs prods
 
 main :: IO ()
-main = do
+main = putStrLn $ show $ checkConsistent productions
+{--
+    do
     let cfg' = fromJust $ elaborateBudgets cfg
     putStrLn ("Grammar length: " ++ (show $ length $ getAllProds cfg'))
     print cfg'
     let regex = cfgToRegex cfg'
     print regex
+--}
