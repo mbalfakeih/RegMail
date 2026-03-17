@@ -242,8 +242,8 @@ oneStarWSP = unkleene "1*WSP" "WSP" True
 optionalStarWSPCRLFOneStarWSP :: Production
 optionalStarWSPCRLFOneStarWSP = NonTerminal "opt-*wsp-crlf-1*wsp" "opt-*wsp-crlf" "1*WSP"
 
-fWS :: Production
-fWS = NonTerminal "FWS" "opt-*wsp-crlf-1*wsp" "obs-FWS"
+fWS :: [Production]
+fWS = undisjunct "FWS" ["opt-*wsp-crlf-1*wsp", "obs-FWS"]
 
 d33_39 :: Production
 d33_39 = Terminal "%d33-39" CharRange {start = 33, end = 39  + 1}
@@ -414,7 +414,7 @@ allProductions =  [epsilon]
     ++ optionalStarWSPCRLF
     ++ oneStarWSP
     ++ [optionalStarWSPCRLFOneStarWSP]
-    ++ [fWS]
+    ++ fWS
     ++ [d33_39]
     ++ [d42_91]
     ++ ctext
