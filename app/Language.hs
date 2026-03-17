@@ -47,8 +47,8 @@ printCharRegex i = if isAscii c && isAlphaNum c && notElem c "\\/.*+?{}()=:^$" t
         showHexByte i = if length (showHex i "") == 2 then showHex i "" else "0" ++ showHex i ""
 
 instance Show Regex where
-    show (One CharRange {..}) = if end - start == 1 then printCharRegex start else "(" ++ printCharRegex start ++ "-" ++ printCharRegex end ++ ")"
+    show (One CharRange {..}) = if end - start == 1 then printCharRegex start else "[" ++ printCharRegex start ++ "-" ++ printCharRegex end ++ "]"
     show (Optional r) = "(" ++ show r ++ ")?"
-    show (Union r1 r2) = "(" ++ show r1 ++ "|" ++ show r2 ++ ")"
-    show (Concat r1 r2) = show r1 ++ show r2
+    show (Union r1 r2) = "" ++ show r1 ++ "|" ++ show r2 ++ ""
+    show (Concat r1 r2) = "(" ++ show r1 ++ ")" ++ "(" ++ show r2 ++ ")"
     show Epsilon = "(eps)"
