@@ -460,7 +460,7 @@ productionsHelper [] = []
 productionsHelper (h:t) = let s = fst (head h) in (s, map (\x -> snd x) h):(productionsHelper t)
 
 cfg :: CFG 
-cfg = CFG {prods = productions, startRule = "addr-spec", budgets = fromList [("local-part", Finite 6), ("domain", Finite 5)]}
+cfg = CFG {prods = productions, startRule = "addr-spec", budgets = fromList [("local-part", Finite 8), ("domain", Finite 8)]}
 
 checkConsistent :: Map String [Production] -> Bool 
 checkConsistent prods = checkConsistentHelper (assocs prods) prods

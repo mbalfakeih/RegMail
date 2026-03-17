@@ -13,8 +13,8 @@ prodToRegex :: CFG -> [String] -> Production -> State (Map String Regex) Regex
 prodToRegex _ _ (Terminal _ cr) = if start cr == end cr then return Epsilon else return (One cr)
 prodToRegex cfg stack (NonTerminal n l r) = do
     if n `elem` stack then return Epsilon else do
-        lr <- varToRegex cfg (n:stack) l
-        rr <- varToRegex cfg (n:stack) r
+        lr <- varToRegex cfg (stack) l
+        rr <- varToRegex cfg (stack) r
         return (Concat lr rr)
 
 varToRegex :: CFG -> [String] -> String -> State (Map String Regex) Regex

@@ -7,7 +7,6 @@ import Data.Char
 import Data.Map
 import Data.Maybe (fromMaybe)
 import Numeric (showHex)
-import Text.Read (Lexeme(String))
 
 data CharRange = CharRange { start :: Int, end :: Int } deriving Show -- end excl
 
@@ -47,7 +46,7 @@ printCharRegex i = if isAscii c && isAlphaNum c && notElem c "\\/.*+?{}()=:^$" t
         showHexByte i = if length (showHex i "") == 2 then showHex i "" else "0" ++ showHex i ""
 
 instance Show Regex where
-    show (One CharRange {..}) = if end - start == 1 then printCharRegex start else "[" ++ printCharRegex start ++ "-" ++ printCharRegex end ++ "]"
+    show (One CharRange {..}) = if end - start == 1 then printCharRegex start else "[" ++ printCharRegex start ++ "-" ++ printCharRegex (end - 1) ++ "]"
     show (Optional r) = "(" ++ show r ++ ")?"
     show (Union r1 r2) = "" ++ show r1 ++ "|" ++ show r2 ++ ""
     show (Concat r1 r2) = "(" ++ show r1 ++ ")" ++ "(" ++ show r2 ++ ")"
