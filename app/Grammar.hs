@@ -329,8 +329,8 @@ x20 = Terminal "%x20" $ CharRange {start = 32, end = 32 + 1}
 x09 :: Production
 x09 = Terminal "%x09" $ CharRange {start = 9, end = 9 + 1}
 
-wsp :: Production
-wsp = NonTerminal "WSP" "%x20" "%x09"
+wsp :: [Production]
+wsp = undisjunct "WSP" ["%x20", "%x09"]
 
 x0D :: Production
 x0D = Terminal "%x0D" $ CharRange {start = 13, end = 13 + 1}
@@ -443,7 +443,7 @@ allProductions =  [epsilon]
     ++ word 
     ++ [x20]
     ++ [x09]
-    ++ [wsp]
+    ++ wsp
     ++ [x0D]
     ++ [x0A]
     ++ [crlf]
