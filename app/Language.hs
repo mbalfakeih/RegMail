@@ -6,6 +6,8 @@ module Language where
 import Data.Char
 import Data.Map
 import Data.Maybe (fromMaybe)
+import Numeric (showHex)
+import Text.Read (Lexeme(String))
 
 data CharRange = CharRange { start :: Int, end :: Int } deriving Show -- end excl
 
@@ -37,8 +39,15 @@ instance Show CFG where
         where
             showOneVar (v, ps) = v ++ ": \n" ++ unlines (showWithBudget (fromMaybe Unlimited $ Data.Map.lookup v budgets) <$> ps)
 
+printCharRegex :: Int -> String
+printCharRegex i = if isAscii c && isAlphaNum c && notElem c "\\/.*+?{}()=:^$" then c:"" else "\\x" ++ showHexByte i
+    where
+        c = chr i
+        showHexByte :: Int -> String
+        showHexByte i = if length (showHex i "") == 2 then showHex i "" else "0" ++ showHex i ""
+
 instance Show Regex where
-    show (One CharRange {..}) = if end - start == 1 then [chr start] else "(\\" ++ show start ++ "-" ++ "\\" ++ show end ++ ")" -- todo this is definitely wrong
+    show (One CharRange {..}) = if end - start == 1 then printCharRegex start else "(" ++ printCharRegex start ++ "-" ++ printCharRegex end ++ ")"
     show (Optional r) = "(" ++ show r ++ ")?"
     show (Union r1 r2) = "(" ++ show r1 ++ "|" ++ show r2 ++ ")"
     show (Concat r1 r2) = show r1 ++ show r2
